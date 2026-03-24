@@ -1,0 +1,174 @@
+# CLAUDE.md — Universal Project Agent System File
+<!-- ============================================================
+  YourVisionYourCreation (YVYC) UNIVERSAL PROJECT TEMPLATE
+  Foundational doctrine for every project under YourVisionYourCreation LLC.
+  Claude Code reads this file at session start and populates all
+  [PLACEHOLDER] sections based on the active project context.
+  
+  Template Version: 2026.1
+  Owner: Albert R. Elmore Jr. (Cade) or (Commander) | YourVisionYourCreation LLC
+  Doctrine Source: YVYC Agent System Standard
+  ============================================================ -->
+ 
+**Project:** [PROJECT_NAME]
+
+**Role:** [Role: ⛔ FULL STOP — DO NOT PROCEED. You have no role until Commander assigns one. 
+Ask Cade directly, right now: "What is my role and domain for this project?" 
+Do not read further. Do not generate output. Do not make assumptions. 
+No role. No work. Once the Cade (Commander) as provided this information to you, next you 
+will come here and update this document]
+
+**Scale Output:** Out-perform any Fortune 100 Company and their technology
+**Agent Surface:** Claude.ai / Claude Code / Claude CLI / Claude Vision / Claude Code Interpreter
+**Repo Root:** [/path/to/repo]
+**Last Updated:** [YYYY-MM-DD]
+
+---
+
+## MISSION
+
+> [One to three sentences. State the product's purpose, who it serves, and the
+> measurable outcome that defines success. Written at the level of a FAANG
+> engineering brief — no marketing language, no vague value statements.]
+ 
+**Example:** "Learnasaurus Rex translates any new subject into the learner's
+existing domain expertise, reducing time-to-competency by eliminating the
+cold-start knowledge gap. Success = a user with zero background in Subject B
+achieves working-level understanding in one session."
+ 
+---
+ 
+## COMMANDER INTENT
+ 
+- [Strategic goal #1 — what must be true when this project succeeds]
+- [Strategic goal #2]
+- [Strategic goal #3]
+- **Non-negotiable constraint:** [e.g., no PII stored client-side, zero third-party
+  auth without Commander approval, no public exposure without explicit go-ahead]
+ 
+---
+ 
+
+## TECH STACK
+ 
+> 🔒 **LOCKED FOUNDATIONS — Non-negotiable across ALL YVYC projects:**
+> GitHub | Firebase | Google Cloud | 
+> Google MCP | Google Workspace (`YVYCAlways@yourvisionyourcreation.com`)
+
+> **Every project ships cross-platform: All phones (iOS + Android) + Web. No exceptions.**
+ 
+| Layer | Technology | Version | Notes |
+|---|---|---|---|
+| Source Control | GitHub | Latest | All repos under YVYC org |
+| Web Framework | Next.js | 14.x+ | App Router — full-stack web |
+| Mobile Framework | React Native + Expo | Latest | Single codebase — iOS, Android, Web |
+| Language | TypeScript | 5.x strict | 🔒 Non-negotiable — all projects |
+| Backend | Firebase Functions | 2nd Gen | Primary serverless layer |
+| Heavy Compute | Google Cloud Run | Latest | Long-running or CPU-intensive ops |
+| Database | Firestore | Latest | 🔒 Primary — real-time, scalable |
+| Auth | Firebase Auth | Latest | 🔒 All platforms locked |
+| Storage | Firebase Storage | Latest | Media, files, assets |
+| AI/ML | Google Vertex AI + Gemini API | Latest | Native to Google stack |
+| MCP | Google MCP | Latest | 🔒 Locked — all agent operations |
+| CI/CD | GitHub Actions + Firebase App Distribution | Latest | Build, test, deploy pipeline |
+| Hosting | Firebase Hosting (web) + Expo EAS (mobile) | Latest | Cross-platform delivery |
+| Styling | Tailwind CSS | 3.x+ | Consistent across web and mobile |
+| State | Zustand | Latest | Lightweight, production-proven |
+| Testing | Vitest + Playwright (web) / Detox (mobile) | Latest | Full coverage standard |
+| Monitoring | Firebase Analytics + Google Cloud Monitoring | Latest | Unified observability |
+| Workspace | Google Workspace | Latest | 🔒 YVYCAlways@yourvisionyourcreation.com |
+| **[MISSION-SPECIFIC]** | **[SOFTWARE NAME]** | **[VERSION]** | **[PURPOSE FOR THIS PROJECT]** |
+
+> The rows above are the YVYC Fortune 100 default stack.
+> They may be adjusted by Commander only, per project mission requirements.
+ 
+> ---
+> ⚠️ **COMMANDER NOTE — TECH STACK:**
+> Rows marked 🔒 are permanently locked. No agent substitutes a locked
+> No agent substitutes a technology without explicit Commander approval — not for convenience,
+> not for speed, not for personal preference.
+> technology without explicit Commander approval — not for convenience,
+> not for speed, not for personal preference.
+>
+> The Commander does not care about hurrying up to deploy.  The Commander cares about creating the next
+best thing that truely helps people! 
+>
+> **MISSION-SPECIFIC SOFTWARE:** If this project requires additional tools,
+> libraries, SDKs, or services not listed above — **install them.**
+> Do not ask for permission to install what the mission requires.
+> Do ask Commander before adding anything that touches auth, billing, secrets, legal, deletions
+> data storage, or public-facing infrastructure.
+>
+> The Drift Monster lives in assumptions. If a technology choice is unclear —
+> **stop and ask Commander before installing or proceeding.**
+> ---
+ 
+---
+
+## REPO STRUCTURE
+ 
+```
+[PROJECT_NAME]/
+├── CLAUDE.md                 # This file — All Anthropic Agents read
+├── AGENTS.md                 # This file - OpenAI'S - Codex Agent reads
+├── GEMINI.md                 # This file - Google Gemini Agent reads
+├── .github/
+|   └── copilot-instructions.md  # GitHub Copilot - Red Team
+
+├── README.md                 # 🔒 Project overview — public facing
+├── .env                      # 🔒 Commander-populated secrets — never committed
+├── .gitignore                # 🔒 Must cover .env before first commit
+└── [PROJECT STRUCTURE]       # Built with Commander — see note below
+```
+ 
+> ---
+> ⚠️ **COMMANDER NOTE — REPO STRUCTURE:**
+> The files above are the non-negotiable bare minimum for every YVYC project repo. They exist on day one. No exceptions.
+>
+> **AI DOCS RULE:** All agent operational files live in the repo. Period.
+> CLAUDE.md, AGENTS.md, GEMINI.md, and GitHub Copilot system files
+> (e.g., GEMINI.md, OPENAI.md, handoffs, session state) belong here —
+> not in Drive, not in a side folder, not floating on the desktop.
+> The repo is the operational ground truth for the agent team.
+>
+> **PROJECT STRUCTURE:** Everything below the bare minimum is built
+> with Commander at project start based on the mission requirements.
+> No agent scaffolds folders, creates directories, or assumes structure
+> without Commander direction.
+>
+> The Drift Monster lives in assumptions. If a technology choice is unclear —
+> **stop and ask Commander before installing or proceeding.**
+>
+> ---
+> ⚠️ **COMMANDER NOTE — REPO STRUCTURE:**
+> The files above are the non-negotiable bare minimum for every YVYC project repo.
+> They exist on day one. No exceptions.
+>
+> **YVYC AI TEAM — CONFIRMED ROSTER:**
+>
+> | Agent | File | Role |
+> |---|---|---|
+> | Claude | `CLAUDE.md` | ⛔ AWAITING COMMANDER ASSIGNMENT |
+> | Gemini | `GEMINI.md` | ⛔ AWAITING COMMANDER ASSIGNMENT |
+> | ChatGPT | `CHATGPT.md` | ⛔ AWAITING COMMANDER ASSIGNMENT |
+> | GitHub Copilot | `.github/copilot-instructions.md` | ⛔ AWAITING COMMANDER ASSIGNMENT |
+>
+The project's full decision trail, corrections, doctrine evolution,
+and cross-agent communication is captured in:
+Team-Cross-Agent-Communication.md
+Document Purpose
+>
+This document is the append-only raw cross-agent communication record for the active TEMPO competency.
+It captures the work, decisions, corrections, checkpoints, handoffs, and doctrine evolution produced by the team during the live competency.
+It is not a dashboard, not a reference tool, not an onboarding document, and not a cold-start guide.
+
+## Document Rules
+
+- This file is append-only working history for the active competency.
+- Do not delete prior entries during the active competency.
+- Do not replace prior entries when a new decision is made.
+- Add the next decision, checkpoint, correction, or refinement at the bottom.
+- Do not append from the top. New content goes at the bottom.
+- Preserve the full decision trail until the competency is complete and the capture is archived to Drive.
+- The value is not only the final doctrine. The value also includes the path, tests, corrections, and decision logic that produced it.
+
