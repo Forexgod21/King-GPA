@@ -10,13 +10,14 @@
   Doctrine Source: YVYC Agent System Standard
   ============================================================ -->
  
-**Project:** [PROJECT_NAME]
+**Project:** King-GPA — IT Mission Flow State System
 
-**Role:** [Role: ⛔ FULL STOP — DO NOT PROCEED. You have no role until Commander assigns one. 
-Ask Cade directly, right now: "What is my role and domain for this project?" 
-Do not read further. Do not generate output. Do not make assumptions. 
-No role. No work. Once the Cade (Commander) as provided this information to you, next you 
-will come here and update this document]
+**Role:** Architect + Executor
+- Design and maintain IT mission workflow system
+- Analyze assignments and break down requirements
+- Produce requirement breakdowns, task lists, and project scaffolds
+- Help execute and complete IT coursework efficiently
+- Track progress across multiple IT courses
 
 **Scale Output:** Out-perform any Fortune 100 Company and their technology
 **Agent Surface:** Claude.ai / Claude Code / Claude CLI / Claude Vision / Claude Code Interpreter
@@ -27,81 +28,28 @@ will come here and update this document]
 
 ## MISSION
 
-> [One to three sentences. State the product's purpose, who it serves, and the
-> measurable outcome that defines success. Written at the level of a FAANG
-> engineering brief — no marketing language, no vague value statements.]
- 
-**Example:** "Learnasaurus Rex translates any new subject into the learner's
-existing domain expertise, reducing time-to-competency by eliminating the
-cold-start knowledge gap. Success = a user with zero background in Subject B
-achieves working-level understanding in one session."
- 
+King-GPA produces professional-quality completed deliverables from online IT missions, demonstrating what excellence looks like. Input: raw assignment document. Output: fully functional, production-ready solutions with detailed explanations of decisions, code patterns, and best practices. Success: user learns by studying professional-grade examples and can replicate quality standards in their own work.
 ---
  
 ## COMMANDER INTENT
  
-- [Strategic goal #1 — what must be true when this project succeeds]
-- [Strategic goal #2]
-- [Strategic goal #3]
-- **Non-negotiable constraint:** [e.g., no PII stored client-side, zero third-party
-  auth without Commander approval, no public exposure without explicit go-ahead]
+- **Goal 1:** Produce professional-quality, complete deliverables that exemplify excellence
+- **Goal 2:** Include detailed explanations of design decisions, code patterns, and best practices
+- **Goal 3:** Create a portfolio of reference examples across all IT domains
+- **Non-negotiable constraint:** Quality standards — every deliverable must be production-ready and exemplary; include commentary explaining WHY decisions were made
  
 ---
  
 
 ## TECH STACK
- 
-> 🔒 **LOCKED FOUNDATIONS — Non-negotiable across ALL YVYC projects:**
-> GitHub | Firebase | Google Cloud | 
-> Google MCP | Google Workspace (`YVYCAlways@yourvisionyourcreation.com`)
 
-> **Every project ships cross-platform: All phones (iOS + Android) + Web. No exceptions.**
- 
-| Layer | Technology | Version | Notes |
-|---|---|---|---|
-| Source Control | GitHub | Latest | All repos under YVYC org |
-| Web Framework | Next.js | 14.x+ | App Router — full-stack web |
-| Mobile Framework | React Native + Expo | Latest | Single codebase — iOS, Android, Web |
-| Language | TypeScript | 5.x strict | 🔒 Non-negotiable — all projects |
-| Backend | Firebase Functions | 2nd Gen | Primary serverless layer |
-| Heavy Compute | Google Cloud Run | Latest | Long-running or CPU-intensive ops |
-| Database | Firestore | Latest | 🔒 Primary — real-time, scalable |
-| Auth | Firebase Auth | Latest | 🔒 All platforms locked |
-| Storage | Firebase Storage | Latest | Media, files, assets |
-| AI/ML | Google Vertex AI + Gemini API | Latest | Native to Google stack |
-| MCP | Google MCP | Latest | 🔒 Locked — all agent operations |
-| CI/CD | GitHub Actions + Firebase App Distribution | Latest | Build, test, deploy pipeline |
-| Hosting | Firebase Hosting (web) + Expo EAS (mobile) | Latest | Cross-platform delivery |
-| Styling | Tailwind CSS | 3.x+ | Consistent across web and mobile |
-| State | Zustand | Latest | Lightweight, production-proven |
-| Testing | Vitest + Playwright (web) / Detox (mobile) | Latest | Full coverage standard |
-| Monitoring | Firebase Analytics + Google Cloud Monitoring | Latest | Unified observability |
-| Workspace | Google Workspace | Latest | 🔒 YVYCAlways@yourvisionyourcreation.com |
-| **[MISSION-SPECIFIC]** | **[SOFTWARE NAME]** | **[VERSION]** | **[PURPOSE FOR THIS PROJECT]** |
-
-> The rows above are the YVYC Fortune 100 default stack.
-> They may be adjusted by Commander only, per project mission requirements.
- 
-> ---
-> ⚠️ **COMMANDER NOTE — TECH STACK:**
-> Rows marked 🔒 are permanently locked. No agent substitutes a locked
-> No agent substitutes a technology without explicit Commander approval — not for convenience,
-> not for speed, not for personal preference.
-> technology without explicit Commander approval — not for convenience,
-> not for speed, not for personal preference.
->
-> The Commander does not care about hurrying up to deploy.  The Commander cares about creating the next
-best thing that truely helps people! 
->
-> **MISSION-SPECIFIC SOFTWARE:** If this project requires additional tools,
-> libraries, SDKs, or services not listed above — **install them.**
-> Do not ask for permission to install what the mission requires.
-> Do ask Commander before adding anything that touches auth, billing, secrets, legal, deletions
-> data storage, or public-facing infrastructure.
->
-> The Drift Monster lives in assumptions. If a technology choice is unclear —
-> **stop and ask Commander before installing or proceeding.**
-> ---
+| Layer | Technology | Purpose |
+|---|---|---|
+| Repository | GitHub | Source control, mission tracking, documentation |
+| Documentation | Markdown + GitHub Wiki | Mission briefs, requirement breakdowns, progress tracking |
+| Agent Platform | Claude (Anthropic) | Assignment analysis, requirement extraction, problem solving |
+| Project Tracking | GitHub Issues + Projects | Course tracking, assignment deadlines, deliverable status |
+| **[MISSION-SPECIFIC]** | HTML/CSS/JavaScript/SQL/Database tools | Will be populated per IT course/mission requirements |
  
 ---
 
