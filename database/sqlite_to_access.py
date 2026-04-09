@@ -39,10 +39,15 @@ def sqlite_to_access(sqlite_path, access_path):
         sqlite_conn = sqlite3.connect(sqlite_path)
         sqlite_cursor = sqlite_conn.cursor()
         
-        # Create new Access database
+        # Create new Access database file
+        access_path = os.path.abspath(access_path)
+        if os.path.exists(access_path):
+            os.remove(access_path)
+        pypyodbc.win_create_mdb(access_path)
+
         driver = "{Microsoft Access Driver (*.mdb, *.accdb)}"
         conn_str = f"Driver={driver};DBQ={access_path};"
-        
+
         access_conn = pypyodbc.connect(conn_str)
         access_cursor = access_conn.cursor()
         
