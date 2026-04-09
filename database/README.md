@@ -49,9 +49,28 @@ To use this database in Microsoft Access, run the conversion script:
 python3 database/export_to_csv.py
 ```
 
-This exports all 4 tables to CSV format that can be imported directly into Access.
+This exports all 4 tables to CSV format that can be imported into Access.
 
 See [CONVERSION.md](CONVERSION.md) for detailed import instructions.
+
+### WARNING — CSV import does NOT finish the Access build
+
+Exporting SQLite tables to CSV and importing them into Microsoft Access does
+**not** preserve final Access-specific design settings. The following are lost
+or wrongly inferred during import and must be fixed by hand in Design View:
+
+- AutoNumber primary keys (imported as plain Number)
+- Date/Time field typing (often imported as Short Text)
+- Long Text vs Short Text (Notes-style fields default to Short Text)
+- Required field properties
+- Relationships between tables
+
+CSV import is **only a data transfer step**. It is not proof of a correct
+Access build. After import, every table must be opened in Access Design View
+and corrected to match the intended schema before screenshots are taken.
+
+See [skills/database/examples/vet_clinic_access_cleanup_after_import.md](../skills/database/examples/vet_clinic_access_cleanup_after_import.md)
+for the exact cleanup steps.
 
 ---
 
@@ -66,10 +85,11 @@ See [CONVERSION.md](CONVERSION.md) for detailed import instructions.
 
 **Outside Codespaces (manual steps if required):**
 - Import CSV into Microsoft Access
-- Screen capture of Access Design View
+- Manual cleanup of every table in Access Design View (data types, AutoNumber, Long Text, Required, relationships)
+- Screen capture of Access Design View *after* cleanup
 - Any other submission format requirements
 
-The SQLite database built in Codespaces is verifiable proof of database structure and relationships. Access conversion and screenshots are optional formatting steps, not proof of completion.
+The SQLite database built in Codespaces is verifiable proof of database structure and relationships. Access conversion is a starting point only — the Access Design View must be corrected by hand before the Access build is considered complete.
 
 ---
 
