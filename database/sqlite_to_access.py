@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
 """
-SQLite to Access Converter
-Converts vet_clinic.db (SQLite) to vet_clinic.accdb (Microsoft Access)
+SQLite to Access Converter (vet clinic)
 
-This script is designed to run on Windows with Microsoft Access installed.
-It uses COM (ADOX) to create the .accdb and pypyodbc to populate it.
+Builds a Microsoft Access .accdb file from the vet clinic SQLite database
+with the CORRECT Access field types and real foreign key relationships.
+
+Field type mapping:
+    AutoNumber primary keys -> COUNTER
+    Date/Time fields        -> DATETIME
+    Long Text (Notes)       -> MEMO
+    Short Text              -> TEXT(n)
+    Number foreign keys     -> LONG
+
+Relationships are created with ALTER TABLE ... ADD CONSTRAINT.
+
+If the SQLite database is missing or empty, this script will automatically
+build it from vet_clinic_schema.sql and vet_clinic_data.sql first, so a
+single command produces a fully populated, correctly typed .accdb.
 
 Installation (Windows):
     pip install pypyodbc
@@ -13,45 +25,175 @@ Usage:
     python database/sqlite_to_access.py
 """
 
-import sqlite3
 import os
 import sys
+import sqlite3
 import subprocess
 import tempfile
+from datetime import datetime
+
+# ----------------------------------------------------------------------------
+# Access schema definition
+# ----------------------------------------------------------------------------
+# Each table lists (column_name, access_ddl_type) in order.
+# date_columns lists the columns whose SQLite TEXT values must be converted
+# to Python datetime objects before being inserted into Access DATETIME fields.
+
+TABLE_SCHEMAS = {
+    "Clients": {
+        "columns": [
+            ("ClientID",    "COUNTER CONSTRAINT PK_Clients PRIMARY KEY"),
+            ("FirstName",   "TEXT(50) NOT NULL"),
+            ("LastName",    "TEXT(50) NOT NULL"),
+            ("PhoneNumber", "TEXT(20) NOT NULL"),
+            ("Email",       "TEXT(100)"),
+        ],
+        "date_columns": [],
+    },
+    "Staff": {
+        "columns": [
+            ("StaffID",        "COUNTER CONSTRAINT PK_Staff PRIMARY KEY"),
+            ("FirstName",      "TEXT(50) NOT NULL"),
+            ("LastName",       "TEXT(50) NOT NULL"),
+            ("Role",           "TEXT(50) NOT NULL"),
+            ("PhoneExtension", "TEXT(10)"),
+        ],
+        "date_columns": [],
+    },
+    "Pets": {
+        "columns": [
+            ("PetID",       "COUNTER CONSTRAINT PK_Pets PRIMARY KEY"),
+            ("ClientID",    "LONG NOT NULL"),
+            ("PetName",     "TEXT(50) NOT NULL"),
+            ("Species",     "TEXT(30) NOT NULL"),
+            ("Breed",       "TEXT(50)"),
+            ("DateOfBirth", "DATETIME"),
+        ],
+        "date_columns": ["DateOfBirth"],
+    },
+    "Appointments": {
+        "columns": [
+            ("AppointmentID",   "COUNTER CONSTRAINT PK_Appointments PRIMARY KEY"),
+            ("PetID",           "LONG NOT NULL"),
+            ("StaffID",         "LONG NOT NULL"),
+            ("AppointmentDate", "DATETIME NOT NULL"),
+            ("ReasonForVisit",  "TEXT(100) NOT NULL"),
+            ("Notes",           "MEMO"),
+        ],
+        "date_columns": ["AppointmentDate"],
+    },
+}
+
+# Tables must be created in this order so foreign keys reference existing tables
+TABLE_ORDER = ["Clients", "Staff", "Pets", "Appointments"]
+
+# (constraint_name, child_table, child_column, parent_table, parent_column)
+RELATIONSHIPS = [
+    ("FK_Pets_Clients",        "Pets",         "ClientID", "Clients", "ClientID"),
+    ("FK_Appointments_Pets",   "Appointments", "PetID",    "Pets",    "PetID"),
+    ("FK_Appointments_Staff",  "Appointments", "StaffID",  "Staff",   "StaffID"),
+]
+
+
+# ----------------------------------------------------------------------------
+# Helpers
+# ----------------------------------------------------------------------------
+
+def parse_sqlite_date(value):
+    """Convert a SQLite TEXT date to a Python datetime, or return None."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return value
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(str(value), fmt)
+        except ValueError:
+            continue
+    return value  # let the driver decide
+
+
+def ensure_sqlite_populated(sqlite_path, schema_path, data_path):
+    """If the SQLite db is missing or empty, build it from schema + data."""
+    needs_build = False
+    if not os.path.exists(sqlite_path):
+        needs_build = True
+    else:
+        try:
+            con = sqlite3.connect(sqlite_path)
+            cur = con.cursor()
+            cur.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'")
+            table_count = cur.fetchone()[0]
+            if table_count == 0:
+                needs_build = True
+            else:
+                cur.execute("SELECT COUNT(*) FROM Clients")
+                if cur.fetchone()[0] == 0:
+                    needs_build = True
+            con.close()
+        except sqlite3.Error:
+            needs_build = True
+
+    if not needs_build:
+        return
+
+    print("   SQLite database is empty - building from schema + data...")
+    if os.path.exists(sqlite_path):
+        os.remove(sqlite_path)
+
+    con = sqlite3.connect(sqlite_path)
+    with open(schema_path, "r", encoding="utf-8") as f:
+        con.executescript(f.read())
+    with open(data_path, "r", encoding="utf-8") as f:
+        con.executescript(f.read())
+    con.commit()
+    con.close()
+    print("   SQLite database built and seeded")
+
 
 def create_accdb(access_path):
-    """Create a blank .accdb file using VBScript + ADOX (works with any Access install)"""
-    access_path = access_path.replace("'", "''")
-    vbs = f'''Set cat = CreateObject("ADOX.Catalog")
-cat.Create "Provider=Microsoft.ACE.OLEDB.12.0;Data Source={access_path};"
-Set cat = Nothing
-WScript.Echo "OK"
-'''
+    """Create a blank .accdb file via VBScript + ADOX."""
+    escaped = access_path.replace("'", "''")
+    vbs = (
+        'Set cat = CreateObject("ADOX.Catalog")\n'
+        f'cat.Create "Provider=Microsoft.ACE.OLEDB.12.0;Data Source={escaped};"\n'
+        'Set cat = Nothing\n'
+        'WScript.Echo "OK"\n'
+    )
     vbs_file = os.path.join(tempfile.gettempdir(), "create_accdb.vbs")
     with open(vbs_file, "w") as f:
         f.write(vbs)
 
-    result = subprocess.run(["cscript", "//NoLogo", vbs_file],
-                            capture_output=True, text=True)
+    result = subprocess.run(
+        ["cscript", "//NoLogo", vbs_file],
+        capture_output=True, text=True,
+    )
     os.remove(vbs_file)
 
     if "OK" in result.stdout and os.path.exists(access_path):
         return True
-    else:
-        print(f"   VBScript output: {result.stdout.strip()}")
-        print(f"   VBScript errors: {result.stderr.strip()}")
-        return False
+    print(f"   VBScript stdout: {result.stdout.strip()}")
+    print(f"   VBScript stderr: {result.stderr.strip()}")
+    return False
+
+
+# ----------------------------------------------------------------------------
+# Main conversion
+# ----------------------------------------------------------------------------
 
 def sqlite_to_access(sqlite_path, access_path):
-    """Convert SQLite database to Microsoft Access format"""
-
     try:
         import pypyodbc
     except ImportError:
         print("pypyodbc not installed")
-        print("   Windows users: pip install pypyodbc")
-        print("   Then run this script again")
+        print("   Run: pip install pypyodbc")
         return False
+
+    schema_path = os.path.join(os.path.dirname(sqlite_path), "vet_clinic_schema.sql")
+    data_path = os.path.join(os.path.dirname(sqlite_path), "vet_clinic_data.sql")
+
+    # 1. Make sure SQLite has the schema and seed data
+    ensure_sqlite_populated(sqlite_path, schema_path, data_path)
 
     if not os.path.exists(sqlite_path):
         print(f"SQLite database not found: {sqlite_path}")
@@ -61,107 +203,92 @@ def sqlite_to_access(sqlite_path, access_path):
     print(f"Converting {sqlite_path} to Access format...")
     print(f"   Target: {access_path}")
 
+    # 2. Create the blank .accdb
+    if os.path.exists(access_path):
+        os.remove(access_path)
+        print("   Removed existing .accdb file")
+
+    print("   Creating blank .accdb file...")
+    if not create_accdb(access_path):
+        print("Failed to create .accdb file")
+        print("   Make sure Microsoft Access (or the Access Database Engine) is installed")
+        return False
+    print("   Blank .accdb created")
+
+    # 3. Connect to SQLite and Access
+    sqlite_conn = sqlite3.connect(sqlite_path)
+    sqlite_cursor = sqlite_conn.cursor()
+
+    driver = "{Microsoft Access Driver (*.mdb, *.accdb)}"
+    conn_str = f"Driver={driver};DBQ={access_path};"
+    access_conn = pypyodbc.connect(conn_str)
+    access_cursor = access_conn.cursor()
+
     try:
-        # Connect to SQLite
-        sqlite_conn = sqlite3.connect(sqlite_path)
-        sqlite_cursor = sqlite_conn.cursor()
+        # 4. Create tables with proper Access types
+        for table in TABLE_ORDER:
+            schema = TABLE_SCHEMAS[table]
+            col_defs = ", ".join(f"{name} {ddl}" for name, ddl in schema["columns"])
+            create_sql = f"CREATE TABLE {table} ({col_defs})"
+            access_cursor.execute(create_sql)
+            print(f"   Created table: {table}")
 
-        # Create new Access database file
-        if os.path.exists(access_path):
-            os.remove(access_path)
-            print("   Removed existing .accdb file")
+        # 5. Create relationships (foreign key constraints)
+        for name, child_t, child_c, parent_t, parent_c in RELATIONSHIPS:
+            alter_sql = (
+                f"ALTER TABLE {child_t} "
+                f"ADD CONSTRAINT {name} "
+                f"FOREIGN KEY ({child_c}) REFERENCES {parent_t} ({parent_c})"
+            )
+            access_cursor.execute(alter_sql)
+            print(f"   Created relationship: {name}")
 
-        print("   Creating blank .accdb file...")
-        if not create_accdb(access_path):
-            print("Failed to create .accdb file")
-            print("   Make sure Microsoft Access is installed")
-            return False
-        print("   Blank .accdb created successfully")
+        # 6. Copy data, converting date columns to real datetimes
+        for table in TABLE_ORDER:
+            schema = TABLE_SCHEMAS[table]
+            col_names = [c[0] for c in schema["columns"]]
+            date_cols = set(schema["date_columns"])
 
-        # Connect to Access via ODBC
-        driver = "{Microsoft Access Driver (*.mdb, *.accdb)}"
-        conn_str = f"Driver={driver};DBQ={access_path};"
-
-        access_conn = pypyodbc.connect(conn_str)
-        access_cursor = access_conn.cursor()
-
-        # Get all tables from SQLite
-        sqlite_cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = sqlite_cursor.fetchall()
-
-        for table_name in tables:
-            table_name = table_name[0]
-
-            # Get schema
-            sqlite_cursor.execute(f"PRAGMA table_info({table_name})")
-            columns = sqlite_cursor.fetchall()
-
-            # Create table in Access
-            create_table_sql = f"CREATE TABLE {table_name} ("
-            col_defs = []
-
-            for col in columns:
-                col_name = col[1]
-                col_type = col[2]
-                col_notnull = col[3]
-
-                # Convert SQLite types to Access types
-                if col_type.upper() == "INTEGER":
-                    access_type = "INTEGER"
-                elif col_type.upper() == "TEXT":
-                    access_type = "TEXT"
-                elif col_type.upper() == "DATETIME":
-                    access_type = "DATETIME"
-                else:
-                    access_type = "TEXT"
-
-                col_def = f"{col_name} {access_type}"
-                if col_notnull:
-                    col_def += " NOT NULL"
-                if col_name.endswith("ID") and col_type.upper() == "INTEGER PRIMARY KEY":
-                    col_def = f"{col_name} AUTOINCREMENT PRIMARY KEY"
-
-                col_defs.append(col_def)
-
-            create_table_sql += ", ".join(col_defs) + ")"
-
-            try:
-                access_cursor.execute(create_table_sql)
-                print(f"   Created table: {table_name}")
-            except Exception as e:
-                print(f"   Could not create table {table_name}: {e}")
-
-        # Copy data from SQLite to Access
-        for table_name in tables:
-            table_name = table_name[0]
-
-            sqlite_cursor.execute(f"SELECT * FROM {table_name}")
+            sqlite_cursor.execute(f"SELECT {', '.join(col_names)} FROM {table}")
             rows = sqlite_cursor.fetchall()
 
-            if rows:
-                # Get column count
-                sqlite_cursor.execute(f"PRAGMA table_info({table_name})")
-                col_count = len(sqlite_cursor.fetchall())
+            if not rows:
+                print(f"   No rows to copy for {table}")
+                continue
 
-                placeholders = ", ".join(["?"] * col_count)
-                insert_sql = f"INSERT INTO {table_name} VALUES ({placeholders})"
+            placeholders = ", ".join(["?"] * len(col_names))
+            cols_sql = ", ".join(col_names)
+            insert_sql = f"INSERT INTO {table} ({cols_sql}) VALUES ({placeholders})"
 
-                for row in rows:
-                    access_cursor.execute(insert_sql, row)
+            for row in rows:
+                converted = []
+                for col_name, value in zip(col_names, row):
+                    if col_name in date_cols:
+                        converted.append(parse_sqlite_date(value))
+                    else:
+                        converted.append(value)
+                access_cursor.execute(insert_sql, converted)
 
-                print(f"   Copied {len(rows)} rows to {table_name}")
+            print(f"   Copied {len(rows)} rows to {table}")
 
         access_conn.commit()
-        access_conn.close()
-        sqlite_conn.close()
-
         print(f"\nDone: {access_path}")
-        print(f"   Open this file in Microsoft Access to view all tables")
+        print("   Open this file in Microsoft Access - tables, types, and relationships are ready.")
         return True
 
     except Exception as e:
         print(f"Error: {e}")
         return False
+    finally:
+        try:
+            access_conn.close()
+        except Exception:
+            pass
+        try:
+            sqlite_conn.close()
+        except Exception:
+            pass
+
 
 if __name__ == "__main__":
     sqlite_path = "database/vet_clinic.db"
@@ -170,6 +297,7 @@ if __name__ == "__main__":
     if sys.platform != "win32":
         print("This script is designed for Windows with Microsoft Access installed")
         print("   Use export_to_csv.py instead for cross-platform CSV export")
-        exit(1)
+        sys.exit(1)
 
-    sqlite_to_access(sqlite_path, access_path)
+    ok = sqlite_to_access(sqlite_path, access_path)
+    sys.exit(0 if ok else 1)
