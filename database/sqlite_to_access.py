@@ -190,8 +190,10 @@ def arrange_relationships(access_path):
         ("Staff",        9500, 1500),
     ]
 
-    DB_LONG = 4               # DAO field type for CreateProperty
-    AC_CMD_RELATIONSHIPS = 36 # acCmdRelationships
+    DB_LONG = 4                # DAO field type for CreateProperty
+    AC_CMD_RELATIONSHIPS = 150 # acCmdRelationships (NOT 36 - that is FormHdrFtr)
+    AC_DEFAULT = -1            # acDefault for DoCmd.Close
+    AC_SAVE_YES = 1            # acSaveYes for DoCmd.Close
 
     print("   Arranging Relationships window layout via Access COM...")
     pythoncom.CoInitialize()
@@ -218,18 +220,23 @@ def arrange_relationships(access_path):
                     doc.Properties.Append(new_prop)
 
         # Open the Relationships window so Access loads the layout from
-        # the X/Y properties we just set, then save and close it. This
-        # bakes the arrangement into the .accdb file.
+        # the X/Y properties we just set, then save and close it with
+        # acSaveYes. This bakes the arrangement into the .accdb file.
         try:
             app.DoCmd.RunCommand(AC_CMD_RELATIONSHIPS)
+            # Close the Relationships window, saving changes
             try:
-                app.DoCmd.Save()
+                app.DoCmd.Close(AC_DEFAULT, "", AC_SAVE_YES)
             except Exception:
-                pass
-            try:
-                app.DoCmd.Close()
-            except Exception:
-                pass
+                # Fall back: try Save() then Close() with no args
+                try:
+                    app.DoCmd.Save()
+                except Exception:
+                    pass
+                try:
+                    app.DoCmd.Close()
+                except Exception:
+                    pass
         except Exception as e:
             print(f"   Note: could not open Relationships window: {e}")
             print("   Table X/Y properties were still written.")
