@@ -100,7 +100,7 @@ def sqlite_to_access(sqlite_path, access_path):
             rows = sqlite_cursor.fetchall()
             
             if rows:
-                // Get column count
+                # Get column count
                 sqlite_cursor.execute(f"PRAGMA table_info({table_name})")
                 col_count = len(sqlite_cursor.fetchall())
                 
