@@ -1,0 +1,36 @@
+{
+  "assignment_id": "example-it163-vet-clinic",
+  "assignment_title": "Relational Database - Vet Clinic Support Database",
+  "course": "IT163",
+  "assignment_type": "database",
+  "source_files": [
+    "assignment_instructions.pdf",
+    "student_draft.docx"
+  ],
+  "required_outputs": [
+    "Part 1 database writeup",
+    "Part 2 table build support",
+    "screenshots appendix",
+    "final submission document"
+  ],
+  "software_required": [
+    "Microsoft Access"
+  ],
+  "missing_inputs": [
+    "physical model"
+  ],
+  "manual_steps_required": [
+    "build tables in Microsoft Access",
+    "capture screenshots in Design View"
+  ],
+  "ai_assistance_used": true,
+  "ai_assistance_scope": [
+    "requirement analysis",
+    "database planning",
+    "build support",
+    "packaging support"
+  ],
+  "current_stage": "intake",
+  "status": "example",
+  "notes": "Example manifest showing a database assignment blocked by a missing physical model."
+}
