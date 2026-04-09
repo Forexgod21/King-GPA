@@ -100,17 +100,22 @@ RELATIONSHIPS = [
 # ----------------------------------------------------------------------------
 
 def parse_sqlite_date(value):
-    """Convert a SQLite TEXT date to a Python datetime, or return None."""
+    """Normalize a SQLite date value to an ISO string the Access ODBC
+    driver accepts for DATETIME columns. Returns None for empty values.
+
+    The Access ODBC driver rejects native Python datetime objects with
+    error 22018 ("Invalid character value for cast specification") when
+    bound as parameters, but it accepts ISO date/time strings directly.
+    """
     if value is None or value == "":
         return None
     if isinstance(value, datetime):
-        return value
-    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
-        try:
-            return datetime.strptime(str(value), fmt)
-        except ValueError:
-            continue
-    return value  # let the driver decide
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+    s = str(value).strip()
+    # If it's a bare date like "2020-05-12", pad with a time component
+    if len(s) == 10:
+        s += " 00:00:00"
+    return s
 
 
 def ensure_sqlite_populated(sqlite_path, schema_path, data_path):
