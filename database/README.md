@@ -41,6 +41,20 @@ This command:
 
 ---
 
+## Converting to Microsoft Access
+
+To use this database in Microsoft Access, run the conversion script:
+
+```bash
+python3 database/export_to_csv.py
+```
+
+This exports all 4 tables to CSV format that can be imported directly into Access.
+
+See [CONVERSION.md](CONVERSION.md) for detailed import instructions.
+
+---
+
 ## Truth Boundaries
 
 **In Codespaces (repo-verified):**
@@ -51,7 +65,7 @@ This command:
 - Export to CSV or SQL dump
 
 **Outside Codespaces (manual steps if required):**
-- Export to Microsoft Access
+- Import CSV into Microsoft Access
 - Screen capture of Access Design View
 - Any other submission format requirements
 
