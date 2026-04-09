@@ -126,7 +126,7 @@ def sqlite_to_access(sqlite_path, access_path):
 
 if __name__ == "__main__":
     sqlite_path = "database/vet_clinic.db"
-    access_path = "database/vet_clinic.accdb"
+    access_path = r"C:\Users\cadeb\Desktop\vet_clinic.accdb"
     
     if sys.platform != "win32":
         print("⚠️  This script is designed for Windows with Microsoft Access installed")
