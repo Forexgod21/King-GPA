@@ -1,2 +1,33 @@
 # King-GPA
-This projects only goal is to help deserving, hardworking people achieve their educational goals. 
+
+King-GPA is an academic IT support system built to help turn assignment requirements into organized, high-quality deliverables through structured intake, execution support, validation, and packaging.
+
+The system is designed for IT-focused academic work such as databases, programming assignments, web projects, networking tasks, cybersecurity papers, systems analysis work, and other technical deliverables.
+
+King-GPA is built around a simple workflow:
+
+1. intake the assignment
+2. identify the assignment type
+3. detect missing inputs or blockers
+4. execute in the correct mode
+5. validate against requirements
+6. package final artifacts
+
+The repo is also designed for coordinated multi-agent work:
+- Codex = repo builder
+- Claude = analyst and architect
+- Copilot = Codespaces accelerator
+
+King-GPA does not fake testing, screenshots, execution, software use, or proof of completion. It keeps generated work separate from verified work and makes manual boundaries explicit when required.
+
+## Core Files
+- `KING-GPA-DOCTRINE.md`
+- `ARCHITECTURE.md`
+- `TEAM-ROLES.md`
+- `LIVE-BUILD-MODE.md`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.github/copilot-instructions.md`
+
+## Current Goal
+Build a controlled, reusable repo system that can support a wide range of academic IT assignments without confusion, drift, or fake completion states.
