@@ -167,6 +167,45 @@ When ready, I can build:
 
 ---
 
+## SESSION LOG — April 9-10, 2026: Vet Clinic Access Database
+
+### Mission
+Build a fully automated pipeline that generates a correct Microsoft Access `.accdb` from SQLite — no manual Design View fixes.
+
+### What Was Built
+- **`database/sqlite_to_access.py`** — One-command generator that produces a complete `.accdb` with correct Access field types (COUNTER/AutoNumber, DATETIME, MEMO/Long Text, TEXT(n)), foreign key relationships, and seed data.
+- **`database/vet_clinic_data.sql`** — Fake seed data: 5 clients, 4 staff, 7 pets, 10 appointments with realistic long-form Notes.
+- **Repo documentation corrected** — README and skill files now state the truth: CSV import is a transfer step, not a finished Access build.
+
+### Technical Lessons Learned
+1. **SQLite → CSV → Access loses types.** AutoNumber, Date/Time, Long Text, Required, and relationships are all lost or wrong after CSV import.
+2. **JET DDL keywords:** `COUNTER` = AutoNumber, `MEMO` = Long Text, `DATETIME` = Date/Time, `LONG` = Number (Long Integer).
+3. **Access ODBC rejects Python datetime objects** (error 22018). Pass ISO strings instead.
+4. **Access COM automation needs Visible=True** for UI commands (RunCommand). Hidden Access silently fails.
+5. **Relationships window layout cannot be programmatically controlled** through any documented Access API. DAO X/Y properties, RunCommand — none of them stick. Manual drag (once) is the only option.
+6. **Windows hides file extensions by default** — caused `.accdb` vs `.accdb.mdb` confusion.
+
+### Process Lessons Learned
+1. **Bad assumptions upstream break everything downstream.** The original "SQLite → CSV → Access = done" instruction was the root cause.
+2. **Fix the generator, not the output.** Never manually fix Design View — fix the script.
+3. **One command should do everything.** `python database/sqlite_to_access.py` builds SQLite, seeds data, creates .accdb with correct types, adds relationships.
+4. **Know when to stop automating.** Four commits on Relationships layout before accepting the drag. Recognize the wall faster next time.
+
+### Final Deliverables (Part 2 of IT163 Unit 4)
+- 4 Design View screenshots (Clients, Pets, Staff, Appointments) — all correct
+- 1 Relationships window screenshot — clean layout, no crossing lines
+- Sent to buddy for submission
+
+### Key Commits
+| Commit | What |
+|--------|------|
+| `103ea69` | Rewrite generator with correct Access types + seed data |
+| `f335eb7` | Fix date binding (ISO strings instead of datetime objects) |
+| `ae071c9` | Remove failed Relationships layout automation |
+| `ac37ec5` | Add cloud database tool product idea |
+
+---
+
 ## Questions or Next Steps?
 
 1. **Ready to build?** Share what you want, and let's start
