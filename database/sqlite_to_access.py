@@ -156,81 +156,6 @@ def ensure_sqlite_populated(sqlite_path, schema_path, data_path):
     print("   SQLite database built and seeded")
 
 
-def arrange_relationships(access_path):
-    """Set table position properties in the .accdb via DAO so the
-    Relationships window opens with a clean left-to-right layout:
-
-        Clients -> Pets -> Appointments <- Staff
-
-    IMPORTANT: this function deliberately does NOT open the Relationships
-    window. Opening it triggers Access's auto-layout which overwrites the
-    DAO properties. By only setting properties and closing, the first time
-    the user opens Database Tools -> Relationships, Access reads these
-    positions as the initial layout.
-
-    Best-effort: if pywin32 is missing or COM fails, the database is still
-    correct — only the visual layout is affected.
-    """
-    try:
-        import win32com.client
-        import pythoncom
-    except ImportError:
-        print("   pywin32 not installed - skipping Relationships layout")
-        print("   To enable automatic layout: pip install pywin32")
-        return False
-
-    # Positions in twips (1440 twips = 1 inch).
-    # Left-to-right: Clients, Pets, Appointments, Staff
-    # Generous spacing (4000 twips apart) keeps boxes and lines clear.
-    positions = [
-        ("Clients",      500,  500),
-        ("Pets",         4500, 500),
-        ("Appointments", 8500, 500),
-        ("Staff",        12500, 500),
-    ]
-
-    DB_LONG = 4  # DAO dbLong constant
-
-    print("   Setting Relationships layout positions via DAO...")
-    pythoncom.CoInitialize()
-    app = None
-    try:
-        app = win32com.client.Dispatch("Access.Application")
-        app.Visible = False
-        app.OpenCurrentDatabase(access_path)
-        db = app.CurrentDb()
-
-        for table_name, x, y in positions:
-            container = db.Containers("Tables")
-            doc = container.Documents(table_name)
-            for prop_name, prop_val in [("X", x), ("Y", y)]:
-                try:
-                    doc.Properties(prop_name).Value = prop_val
-                except Exception:
-                    # Property doesn't exist yet — create it
-                    new_prop = db.CreateProperty(prop_name, DB_LONG, prop_val)
-                    doc.Properties.Append(new_prop)
-
-        app.CloseCurrentDatabase()
-        print("   Layout positions set")
-        return True
-
-    except Exception as e:
-        print(f"   Could not set layout positions: {e}")
-        print("   The .accdb is still correct - only the visual layout is affected.")
-        return False
-
-    finally:
-        if app is not None:
-            try:
-                app.Quit()
-            except Exception:
-                pass
-        try:
-            pythoncom.CoUninitialize()
-        except Exception:
-            pass
-
 
 def create_accdb(access_path):
     """Create a blank .accdb file via VBScript + ADOX."""
@@ -381,9 +306,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     ok = sqlite_to_access(sqlite_path, access_path)
-    if ok:
-        # Best-effort cosmetic step: arrange the Relationships window
-        # layout in the .accdb so it opens with no crossing lines.
-        # Failure here does not fail the build.
-        arrange_relationships(access_path)
     sys.exit(0 if ok else 1)
