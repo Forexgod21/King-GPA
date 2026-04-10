@@ -157,101 +157,86 @@ def ensure_sqlite_populated(sqlite_path, schema_path, data_path):
 
 
 def arrange_relationships(access_path):
-    """Set the Relationships window layout in the generated .accdb so it
-    opens with a clean, non-crossing arrangement:
+    """Open the Relationships window via Access COM automation so the
+    auto-layout is persisted into the .accdb file.
 
-        Clients -> Pets -> Appointments <- Staff
-
-    Access stores per-table positions for the Relationships window as
-    'X' and 'Y' Document properties (in twips) on each table in the
-    'Tables' container. Setting them via DAO and then opening the
-    Relationships window once with Access COM automation persists the
-    layout into the .accdb file.
+    Uses gencache.EnsureDispatch to resolve the real Access enum
+    constants (acCmdRelationships, etc.) from the type library, and
+    makes Access visible — RunCommand triggers UI actions that fail
+    when the application is hidden.
 
     This step is best-effort: if pywin32 is not installed or COM fails,
-    the database itself is still correct - only the visual layout is
-    affected, and the user can re-run after installing pywin32.
+    the database itself is still correct — only the visual layout is
+    affected.
     """
     try:
         import win32com.client
+        import win32com.client.gencache
         import pythoncom
+        import time
     except ImportError:
         print("   pywin32 not installed - skipping Relationships layout")
         print("   To enable automatic layout: pip install pywin32")
         return False
 
-    # Layout positions in twips (1440 twips = 1 inch).
-    # Tables are roughly 2400 twips wide; 3000 spacing avoids overlap
-    # and keeps the line endpoints clean.
-    positions = [
-        ("Clients",      500,  1500),
-        ("Pets",         3500, 1500),
-        ("Appointments", 6500, 1500),
-        ("Staff",        9500, 1500),
-    ]
-
-    DB_LONG = 4                # DAO field type for CreateProperty
-    AC_CMD_RELATIONSHIPS = 150 # acCmdRelationships (NOT 36 - that is FormHdrFtr)
-    AC_DEFAULT = -1            # acDefault for DoCmd.Close
-    AC_SAVE_YES = 1            # acSaveYes for DoCmd.Close
-
     print("   Arranging Relationships window layout via Access COM...")
     pythoncom.CoInitialize()
     app = None
     try:
-        # DispatchEx forces a fresh hidden Access instance instead of
-        # latching onto one the user might already have running.
-        app = win32com.client.DispatchEx("Access.Application")
-        try:
-            app.Visible = False
-        except Exception:
-            pass
+        # EnsureDispatch generates early-binding wrappers from the Access
+        # type library, which populates win32com.client.constants with
+        # all real Access enum values (acCmdRelationships, acSaveYes, etc.)
+        app = win32com.client.gencache.EnsureDispatch("Access.Application")
+        from win32com.client import constants
+
+        # Access MUST be visible for RunCommand (UI commands) to work.
+        # Previous attempts with Visible=False all failed with
+        # "command isn't available now".
+        app.Visible = True
 
         app.OpenCurrentDatabase(access_path)
-        db = app.CurrentDb()
 
-        for table_name, x, y in positions:
-            doc = db.Containers("Tables").Documents(table_name)
-            for prop_name, prop_val in (("X", x), ("Y", y)):
-                try:
-                    doc.Properties(prop_name).Value = prop_val
-                except Exception:
-                    new_prop = db.CreateProperty(prop_name, DB_LONG, prop_val)
-                    doc.Properties.Append(new_prop)
+        # Open the Relationships window — uses the real constant from
+        # the Access type library, not a hardcoded guess.
+        app.DoCmd.RunCommand(constants.acCmdRelationships)
 
-        # Open the Relationships window so Access loads the layout from
-        # the X/Y properties we just set, then save and close it with
-        # acSaveYes. This bakes the arrangement into the .accdb file.
+        # Brief pause to let the Relationships window fully render
+        time.sleep(1)
+
+        # Close the Relationships window, saving the layout.
+        # This persists the auto-arranged positions into the .accdb.
         try:
-            app.DoCmd.RunCommand(AC_CMD_RELATIONSHIPS)
-            # Close the Relationships window, saving changes
+            app.DoCmd.Close(
+                constants.acDefault,    # ObjectType (default = active window)
+                "",                     # ObjectName
+                constants.acSaveYes,    # Save
+            )
+        except Exception:
+            # Fallback: try saving then closing without arguments
             try:
-                app.DoCmd.Close(AC_DEFAULT, "", AC_SAVE_YES)
+                app.DoCmd.Save()
             except Exception:
-                # Fall back: try Save() then Close() with no args
-                try:
-                    app.DoCmd.Save()
-                except Exception:
-                    pass
-                try:
-                    app.DoCmd.Close()
-                except Exception:
-                    pass
-        except Exception as e:
-            print(f"   Note: could not open Relationships window: {e}")
-            print("   Table X/Y properties were still written.")
+                pass
+            try:
+                app.DoCmd.Close()
+            except Exception:
+                pass
 
         app.CloseCurrentDatabase()
-        print("   Relationships layout arranged and saved")
+        print("   Relationships layout saved")
         return True
 
     except Exception as e:
         print(f"   Could not arrange Relationships layout: {e}")
-        print("   The .accdb is still correct - this only affects the visual layout.")
+        print("   The .accdb is still correct - only the visual layout is affected.")
         return False
 
     finally:
         if app is not None:
+            try:
+                app.Visible = False
+            except Exception:
+                pass
             try:
                 app.Quit()
             except Exception:
