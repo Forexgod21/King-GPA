@@ -157,86 +157,71 @@ def ensure_sqlite_populated(sqlite_path, schema_path, data_path):
 
 
 def arrange_relationships(access_path):
-    """Open the Relationships window via Access COM automation so the
-    auto-layout is persisted into the .accdb file.
+    """Set table position properties in the .accdb via DAO so the
+    Relationships window opens with a clean left-to-right layout:
 
-    Uses gencache.EnsureDispatch to resolve the real Access enum
-    constants (acCmdRelationships, etc.) from the type library, and
-    makes Access visible — RunCommand triggers UI actions that fail
-    when the application is hidden.
+        Clients -> Pets -> Appointments <- Staff
 
-    This step is best-effort: if pywin32 is not installed or COM fails,
-    the database itself is still correct — only the visual layout is
-    affected.
+    IMPORTANT: this function deliberately does NOT open the Relationships
+    window. Opening it triggers Access's auto-layout which overwrites the
+    DAO properties. By only setting properties and closing, the first time
+    the user opens Database Tools -> Relationships, Access reads these
+    positions as the initial layout.
+
+    Best-effort: if pywin32 is missing or COM fails, the database is still
+    correct — only the visual layout is affected.
     """
     try:
         import win32com.client
-        import win32com.client.gencache
         import pythoncom
-        import time
     except ImportError:
         print("   pywin32 not installed - skipping Relationships layout")
         print("   To enable automatic layout: pip install pywin32")
         return False
 
-    print("   Arranging Relationships window layout via Access COM...")
+    # Positions in twips (1440 twips = 1 inch).
+    # Left-to-right: Clients, Pets, Appointments, Staff
+    # Generous spacing (4000 twips apart) keeps boxes and lines clear.
+    positions = [
+        ("Clients",      500,  500),
+        ("Pets",         4500, 500),
+        ("Appointments", 8500, 500),
+        ("Staff",        12500, 500),
+    ]
+
+    DB_LONG = 4  # DAO dbLong constant
+
+    print("   Setting Relationships layout positions via DAO...")
     pythoncom.CoInitialize()
     app = None
     try:
-        # EnsureDispatch generates early-binding wrappers from the Access
-        # type library, which populates win32com.client.constants with
-        # all real Access enum values (acCmdRelationships, acSaveYes, etc.)
-        app = win32com.client.gencache.EnsureDispatch("Access.Application")
-        from win32com.client import constants
-
-        # Access MUST be visible for RunCommand (UI commands) to work.
-        # Previous attempts with Visible=False all failed with
-        # "command isn't available now".
-        app.Visible = True
-
+        app = win32com.client.Dispatch("Access.Application")
+        app.Visible = False
         app.OpenCurrentDatabase(access_path)
+        db = app.CurrentDb()
 
-        # Open the Relationships window — uses the real constant from
-        # the Access type library, not a hardcoded guess.
-        app.DoCmd.RunCommand(constants.acCmdRelationships)
-
-        # Brief pause to let the Relationships window fully render
-        time.sleep(1)
-
-        # Close the Relationships window, saving the layout.
-        # This persists the auto-arranged positions into the .accdb.
-        try:
-            app.DoCmd.Close(
-                constants.acDefault,    # ObjectType (default = active window)
-                "",                     # ObjectName
-                constants.acSaveYes,    # Save
-            )
-        except Exception:
-            # Fallback: try saving then closing without arguments
-            try:
-                app.DoCmd.Save()
-            except Exception:
-                pass
-            try:
-                app.DoCmd.Close()
-            except Exception:
-                pass
+        for table_name, x, y in positions:
+            container = db.Containers("Tables")
+            doc = container.Documents(table_name)
+            for prop_name, prop_val in [("X", x), ("Y", y)]:
+                try:
+                    doc.Properties(prop_name).Value = prop_val
+                except Exception:
+                    # Property doesn't exist yet — create it
+                    new_prop = db.CreateProperty(prop_name, DB_LONG, prop_val)
+                    doc.Properties.Append(new_prop)
 
         app.CloseCurrentDatabase()
-        print("   Relationships layout saved")
+        print("   Layout positions set")
         return True
 
     except Exception as e:
-        print(f"   Could not arrange Relationships layout: {e}")
+        print(f"   Could not set layout positions: {e}")
         print("   The .accdb is still correct - only the visual layout is affected.")
         return False
 
     finally:
         if app is not None:
-            try:
-                app.Visible = False
-            except Exception:
-                pass
             try:
                 app.Quit()
             except Exception:
