@@ -29,5 +29,9 @@ King-GPA does not fake testing, screenshots, execution, software use, or proof o
 - `CLAUDE.md`
 - `.github/copilot-instructions.md`
 
+## Quick Start / User Guide
+- See the user-facing guide: `HOW_TO_USE.md` for a concise how-to and workflow steps.
+- Example intake manifest: `intake/examples/intake_manifest.example.json` demonstrates the fields to collect during intake.
+
 ## Current Goal
 Build a controlled, reusable repo system that can support a wide range of academic IT assignments without confusion, drift, or fake completion states.

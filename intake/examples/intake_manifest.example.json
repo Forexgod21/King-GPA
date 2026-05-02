@@ -1,0 +1,44 @@
+{
+  "assignment_id": "example-001",
+  "assignment_title": "Example Assignment Title",
+  "course": "COURSE101",
+  "due_date": "2026-06-01",
+  "assignment_type": "database | programming | web | networking",
+  "source_files": [
+    "assignment_instructions.pdf",
+    "starter_code.zip"
+  ],
+  "primary_contact": {
+    "name": "Instructor Name",
+    "email": "instructor@example.edu"
+  },
+  "required_outputs": [
+    {
+      "name": "Project report",
+      "format": "PDF",
+      "description": "Writeup that explains your design, implementation, and testing."
+    },
+    {
+      "name": "Source code / database files",
+      "format": "ZIP / ACCDB",
+      "description": "All runnable source, schema, and any exported data files."
+    }
+  ],
+  "acceptance_criteria": [
+    "Meets all rubric items listed in the instructions",
+    "Code runs without errors on the specified platform",
+    "Deliverables organized and clearly labeled"
+  ],
+  "software_required": ["List any required software here (e.g. Microsoft Access)", "Optional: versions"] ,
+  "estimated_effort_hours": 8,
+  "missing_inputs": ["e.g. datasets, diagrams, instructor clarifications"],
+  "blockers": [],
+  "manual_steps_required": ["Any parts that must be done manually or outside automation"],
+  "ai_assistance_used": false,
+  "ai_assistance_scope": [],
+  "current_stage": "intake",
+  "status": "open",
+  "created_by": "student@example.edu",
+  "created_at": "2026-05-02T12:00:00Z",
+  "notes": "Use this manifest as the starting point; update fields as you gather materials."
+}
