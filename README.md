@@ -1,4 +1,5 @@
 # King-GPA
+ [![How to Use](https://img.shields.io/badge/guide-HOW--TO--USE-blue)](HOW_TO_USE.md)
 
 King-GPA is an academic IT support system built to help turn assignment requirements into organized, high-quality deliverables through structured intake, execution support, validation, and packaging.
 
